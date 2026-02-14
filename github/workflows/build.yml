@@ -1,0 +1,31 @@
+name: Build APK
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: false # 强制不加载那个坏掉的私有库
+
+      - name: Kill Ghost Submodule
+        run: |
+          # 暴力强拆那个带箭头的僵尸文件夹
+          git rm -r --cached TMessagesProj/proprietary || true
+          rm -rf TMessagesProj/proprietary
+          # 建立一个真实的普通文件夹，并塞入假文件骗过编译器
+          mkdir -p TMessagesProj/src/main/java/com/radolyn/ayugram/proprietary
+          echo "package com.radolyn.ayugram.proprietary; public class AyuHistoryHook { public static void hook(Object... args) {} }" > TMessagesProj/src/main/java/com/radolyn/ayugram/proprietary/AyuHistoryHook.java
+          echo "package com.radolyn.ayugram.proprietary; public class AyuMessageUtils { public static boolean isMessageVisible(Object... args) { return true; } public static Object getOriginalMessage(Object... args) { return null; } }" > TMessagesProj/src/main/java/com/radolyn/ayugram/proprietary/AyuMessageUtils.java
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        run: chmod +x gradlew && ./gradlew assembleDebug
+
