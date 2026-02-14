@@ -17,13 +17,13 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
 
-      - uses: DamianReeves/write-file-action@master
+      - name: Write API Keys
+        uses: DamianReeves/write-file-action@master
         with:
           path: ./API_KEYS
           contents: |
             APP_ID = 37274250
             APP_HASH = "5205cbdae6cecc6ce1bd494b5685fe16"
-
             MAPS_V2_API = ${{ secrets.MAPS_KEY }}
             
             SIGNING_KEY_PASSWORD = ${{ secrets.CERT_KEY }}
@@ -62,25 +62,11 @@ jobs:
 
       - name: Prepare Environment
         run: |
-          echo "Removing large packages"
-          sudo apt-get update
-          sudo apt-get remove -y '^llvm-.*'
-          sudo apt-get remove -y 'php.*'
-          sudo apt-get remove -y '^mongodb-.*'
-          sudo apt-get remove -y '^mysql-.*'
-          sudo apt-get remove -y azure-cli firefox mono-devel libgl1-mesa-dri
+          echo "Removing large packages to free space"
+          sudo apt-get remove -y '^llvm-.*' 'php.*' '^mongodb-.*' '^mysql-.*' azure-cli firefox mono-devel libgl1-mesa-dri
           sudo apt-get autoremove -y
           sudo apt-get clean
-          
-          echo "Removing large directories"
-          sudo rm -rf /usr/share/dotnet/
-          sudo rm -rf /usr/local/graalvm/
-          sudo rm -rf /usr/local/.ghcup/
-          sudo rm -rf /usr/local/share/powershell
-          sudo rm -rf /usr/local/share/chromium
-          sudo rm -rf /usr/local/lib/node_modules
-          df -h
-          
+          sudo rm -rf /usr/share/dotnet/ /usr/local/graalvm/ /usr/local/.ghcup/ /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/node_modules
           sudo apt-get install bison gcc make curl ninja-build ccache -y
 
       - name: Grant execute permission for gradlew
@@ -89,8 +75,8 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assembleAfatRelease
 
-      - name: Upload
+      - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: Release APK
+          name: Release-APK
           path: TMessagesProj/build/outputs/apk/afat/release/*.apk
