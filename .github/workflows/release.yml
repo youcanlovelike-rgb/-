@@ -14,10 +14,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-          fetch-depth: 0
-          # 这里改用默认的 GITHUB_TOKEN，避免报错
-          token: ${{ github.token }}
+          # 关键修改：关闭递归拉取子模块，避开那个私有仓库
+          submodules: false
+          fetch-depth: 1
 
       - name: Write API Keys
         uses: DamianReeves/write-file-action@master
@@ -42,22 +41,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
-
-      - name: Cache Gradle Build
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches/build-cache-*
-            ~/.gradle/buildOutputCleanup/cache.properties
-          key: gradle-builds-${{ github.sha }}
-          restore-keys: |
-            gradle-builds
-
-      - name: Set up ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: ccache
-          restore-keys: ccache
 
       - name: Setup Android SDK Tools
         uses: android-actions/setup-android@v3
