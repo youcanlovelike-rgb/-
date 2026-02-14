@@ -11,11 +11,13 @@ jobs:
       CCACHE_MAXSIZE: "10G"
       CCACHE_HARDLINK: "true"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
-          token: ${{ secrets.GH_TOKEN }}
+          # 这里改用默认的 GITHUB_TOKEN，避免报错
+          token: ${{ github.token }}
 
       - name: Write API Keys
         uses: DamianReeves/write-file-action@master
